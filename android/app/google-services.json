@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "747894783578",
+    "project_id": "mic-whispers-7d061",
+    "storage_bucket": "mic-whispers-7d061.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:747894783578:android:78f5d23d47ede6b93c2263",
+        "android_client_info": {
+          "package_name": "com.wellnoc.micwhispers.mic_whispers"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAIOWB_N5WJK7Ugs649xcFWwlOW65B-Xbc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

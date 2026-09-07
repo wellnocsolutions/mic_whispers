@@ -1,1 +1,55 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"mic-whispers-7d061","appId":"1:747894783578:android:78f5d23d47ede6b93c2263","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"mic-whispers-7d061","appId":"1:747894783578:ios:6d32fc1a9c9598d53c2263","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"macos":{"default":{"projectId":"mic-whispers-7d061","appId":"1:747894783578:ios:6d32fc1a9c9598d53c2263","uploadDebugSymbols":false,"fileOutput":"macos/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"mic-whispers-7d061","configurations":{"android":"1:747894783578:android:78f5d23d47ede6b93c2263","ios":"1:747894783578:ios:6d32fc1a9c9598d53c2263","macos":"1:747894783578:ios:6d32fc1a9c9598d53c2263","web":"1:747894783578:web:77a87c7e713fe54b3c2263","windows":"1:747894783578:web:cec6b4a76f66f3ee3c2263"}}}}}}
+{
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "mic-whispers-7d061",
+          "appId": "1:747894783578:android:78f5d23d47ede6b93c2263",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "mic-whispers-7d061",
+          "appId": "1:747894783578:ios:6d32fc1a9c9598d53c2263",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "mic-whispers-7d061",
+          "appId": "1:747894783578:ios:6d32fc1a9c9598d53c2263",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "mic-whispers-7d061",
+          "configurations": {
+            "android": "1:747894783578:android:78f5d23d47ede6b93c2263",
+            "ios": "1:747894783578:ios:6d32fc1a9c9598d53c2263",
+            "macos": "1:747894783578:ios:6d32fc1a9c9598d53c2263",
+            "web": "1:747894783578:web:77a87c7e713fe54b3c2263",
+            "windows": "1:747894783578:web:cec6b4a76f66f3ee3c2263"
+          }
+        }
+      }
+    }
+  }
+}

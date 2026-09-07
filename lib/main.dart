@@ -16,15 +16,52 @@ void main() async {
   runApp(const MicWhispersApp());
 }
 
-class MicWhispersApp extends StatelessWidget {
-  const MicWhispersApp({super.key});
+/* ============================================================================
+   THEME CONTROLLER & DESIGN SYSTEM (Light / Dark Theme Support)
+============================================================================ */
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'MIC Whispers',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
+class AppTheme {
+  static final ValueNotifier<ThemeMode> themeNotifier =
+      ValueNotifier<ThemeMode>(ThemeMode.dark);
+
+  static bool isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  static void toggleTheme() {
+    themeNotifier.value = themeNotifier.value == ThemeMode.dark
+        ? ThemeMode.light
+        : ThemeMode.dark;
+  }
+
+  // Adaptive Colors
+  static Color bg(BuildContext context) =>
+      isDark(context) ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+
+  static Color cardBg(BuildContext context) =>
+      isDark(context) ? const Color(0xFF1E293B) : Colors.white;
+
+  static Color border(BuildContext context) =>
+      isDark(context) ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+
+  static Color textPrimary(BuildContext context) =>
+      isDark(context) ? const Color(0xFFF1F5F9) : const Color(0xFF0F172A);
+
+  static Color textSecondary(BuildContext context) =>
+      isDark(context) ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+
+  static Color pillBg(BuildContext context) =>
+      isDark(context) ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
+
+  static Color inputBg(BuildContext context) =>
+      isDark(context) ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+
+  static Color primary(BuildContext context) =>
+      isDark(context) ? const Color(0xFF10B981) : const Color(0xFF059669);
+
+  static Color secondary(BuildContext context) =>
+      isDark(context) ? const Color(0xFFF59E0B) : const Color(0xFFD97706);
+
+  static ThemeData get darkTheme => ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF0F172A),
@@ -32,9 +69,50 @@ class MicWhispersApp extends StatelessWidget {
           primary: Color(0xFF10B981),
           secondary: Color(0xFFF59E0B),
           surface: Color(0xFF1E293B),
+          onSurface: Color(0xFFF1F5F9),
         ),
-      ),
-      home: const AuthGate(),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF0F172A),
+          foregroundColor: Color(0xFFF1F5F9),
+          elevation: 0,
+        ),
+      );
+
+  static ThemeData get lightTheme => ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+        colorScheme: const ColorScheme.light(
+          primary: Color(0xFF059669),
+          secondary: Color(0xFFD97706),
+          surface: Colors.white,
+          onSurface: Color(0xFF0F172A),
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          foregroundColor: Color(0xFF0F172A),
+          elevation: 0,
+        ),
+      );
+}
+
+class MicWhispersApp extends StatelessWidget {
+  const MicWhispersApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: AppTheme.themeNotifier,
+      builder: (context, currentMode, _) {
+        return MaterialApp(
+          title: 'MIC Whispers',
+          debugShowCheckedModeBanner: false,
+          themeMode: currentMode,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          home: const AuthGate(),
+        );
+      },
     );
   }
 }
@@ -189,262 +267,301 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppTheme.isDark(context);
+
     return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 440),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Logo & Header
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0x2610B981),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFF10B981), width: 2),
-                  ),
-                  child: const Icon(
-                    Icons.chat_bubble_outline_rounded,
-                    color: Color(0xFF10B981),
-                    size: 48,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'MIC Whispers',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.5,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Encrypted Campus Social Hub • MIC Arts & Science College',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
-                ),
-                const SizedBox(height: 28),
-
-                // Error alert
-                if (_errorMessage != null)
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.redAccent.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.redAccent),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.error_outline,
-                            color: Colors.redAccent, size: 20),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _errorMessage!,
-                            style: const TextStyle(
-                                color: Colors.redAccent, fontSize: 12),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                // Auth Card
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: const Color(0xFF334155)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _isSignUp ? 'Create Student Persona' : 'Student Sign In',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      if (_isSignUp) ...[
-                        // Handle
-                        TextField(
-                          controller: _handleController,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            labelText: 'Anonymous Handle (e.g. Shadow Ninja)',
-                            labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
-                            filled: true,
-                            fillColor: const Color(0xFF0F172A),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide:
-                                  const BorderSide(color: Color(0xFF334155)),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-
-                        // Department Dropdown
-                        DropdownButtonFormField<String>(
-                          initialValue: _department,
-                          dropdownColor: const Color(0xFF1E293B),
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            labelText: 'Department',
-                            labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
-                            filled: true,
-                            fillColor: const Color(0xFF0F172A),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide:
-                                  const BorderSide(color: Color(0xFF334155)),
-                            ),
-                          ),
-                          items: _departments.map((d) {
-                            return DropdownMenuItem(value: d, child: Text(d));
-                          }).toList(),
-                          onChanged: (val) {
-                            if (val != null) setState(() => _department = val);
-                          },
-                        ),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // Email
-                      TextField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          labelText: 'College / Personal Email',
-                          labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
-                          filled: true,
-                          fillColor: const Color(0xFF0F172A),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide:
-                                const BorderSide(color: Color(0xFF334155)),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-
-                      // Password
-                      TextField(
-                        controller: _passwordController,
-                        obscureText: true,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
-                          filled: true,
-                          fillColor: const Color(0xFF0F172A),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide:
-                                const BorderSide(color: Color(0xFF334155)),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Submit Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _submit,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF10B981),
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.black,
-                                  ),
-                                )
-                              : Text(
-                                  _isSignUp ? 'Sign Up & Enter' : 'Sign In',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // Toggle Sign Up / Sign In
-                      Center(
-                        child: TextButton(
-                          onPressed: () =>
-                              setState(() => _isSignUp = !_isSignUp),
-                          child: Text(
-                            _isSignUp
-                                ? 'Already have an account? Sign In'
-                                : 'New student? Create Persona',
-                            style: const TextStyle(
-                              color: Color(0xFF10B981),
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Quick Demo Entry Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: OutlinedButton.icon(
-                    onPressed: _isLoading ? null : _quickStudentDemoAccess,
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFFF59E0B)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    icon: const Icon(Icons.flash_on_rounded,
-                        color: Color(0xFFF59E0B)),
-                    label: const Text(
-                      '⚡ 1-Click Fast Student Entry (No Typing)',
-                      style: TextStyle(
-                        color: Color(0xFFF59E0B),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+      backgroundColor: AppTheme.bg(context),
+      body: Stack(
+        children: [
+          Positioned(
+            top: 40,
+            right: 20,
+            child: IconButton(
+              icon: Icon(
+                isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                color: isDark ? const Color(0xFFFACC15) : const Color(0xFF0F172A),
+              ),
+              tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+              onPressed: () => AppTheme.toggleTheme(),
             ),
           ),
-        ),
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Logo & Header
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0x2610B981),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFF10B981), width: 2),
+                      ),
+                      child: const Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        color: Color(0xFF10B981),
+                        size: 48,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'MIC Whispers',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                        color: AppTheme.textPrimary(context),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Encrypted Campus Social Hub • MIC Arts & Science College',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 13, color: AppTheme.textSecondary(context)),
+                    ),
+                    const SizedBox(height: 28),
+
+                    // Error alert
+                    if (_errorMessage != null)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.redAccent),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error_outline,
+                                color: Colors.redAccent, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style: const TextStyle(
+                                    color: Colors.redAccent, fontSize: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    // Auth Card
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: AppTheme.cardBg(context),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: AppTheme.border(context)),
+                        boxShadow: [
+                          if (!isDark)
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _isSignUp ? 'Create Student Persona' : 'Student Sign In',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textPrimary(context),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          if (_isSignUp) ...[
+                            // Handle
+                            TextField(
+                              controller: _handleController,
+                              style: TextStyle(color: AppTheme.textPrimary(context)),
+                              decoration: InputDecoration(
+                                labelText: 'Anonymous Handle (e.g. Shadow Ninja)',
+                                labelStyle: TextStyle(color: AppTheme.textSecondary(context)),
+                                filled: true,
+                                fillColor: AppTheme.inputBg(context),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(color: AppTheme.border(context)),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(color: AppTheme.border(context)),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+
+                            // Department Dropdown
+                            DropdownButtonFormField<String>(
+                              initialValue: _department,
+                              dropdownColor: AppTheme.cardBg(context),
+                              style: TextStyle(color: AppTheme.textPrimary(context)),
+                              decoration: InputDecoration(
+                                labelText: 'Department',
+                                labelStyle: TextStyle(color: AppTheme.textSecondary(context)),
+                                filled: true,
+                                fillColor: AppTheme.inputBg(context),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(color: AppTheme.border(context)),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(color: AppTheme.border(context)),
+                                ),
+                              ),
+                              items: _departments.map((d) {
+                                return DropdownMenuItem(value: d, child: Text(d));
+                              }).toList(),
+                              onChanged: (val) {
+                                if (val != null) setState(() => _department = val);
+                              },
+                            ),
+                            const SizedBox(height: 14),
+                          ],
+
+                          // Email
+                          TextField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            style: TextStyle(color: AppTheme.textPrimary(context)),
+                            decoration: InputDecoration(
+                              labelText: 'College / Personal Email',
+                              labelStyle: TextStyle(color: AppTheme.textSecondary(context)),
+                              filled: true,
+                              fillColor: AppTheme.inputBg(context),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide(color: AppTheme.border(context)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide(color: AppTheme.border(context)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Password
+                          TextField(
+                            controller: _passwordController,
+                            obscureText: true,
+                            style: TextStyle(color: AppTheme.textPrimary(context)),
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              labelStyle: TextStyle(color: AppTheme.textSecondary(context)),
+                              filled: true,
+                              fillColor: AppTheme.inputBg(context),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide(color: AppTheme.border(context)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: BorderSide(color: AppTheme.border(context)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Submit Button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _submit,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF10B981),
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.black,
+                                      ),
+                                    )
+                                  : Text(
+                                      _isSignUp ? 'Sign Up & Enter' : 'Sign In',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // Toggle Sign Up / Sign In
+                          Center(
+                            child: TextButton(
+                              onPressed: () =>
+                                  setState(() => _isSignUp = !_isSignUp),
+                              child: Text(
+                                _isSignUp
+                                    ? 'Already have an account? Sign In'
+                                    : 'New student? Create Persona',
+                                style: const TextStyle(
+                                  color: Color(0xFF10B981),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Quick Demo Entry Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: OutlinedButton.icon(
+                        onPressed: _isLoading ? null : _quickStudentDemoAccess,
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFFF59E0B)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        icon: const Icon(Icons.flash_on_rounded,
+                            color: Color(0xFFF59E0B)),
+                        label: const Text(
+                          '⚡ 1-Click Fast Student Entry (No Typing)',
+                          style: TextStyle(
+                            color: Color(0xFFF59E0B),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -468,8 +585,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.bg(context),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: AppTheme.cardBg(context),
         elevation: 0,
         title: Row(
           children: [
@@ -489,13 +607,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'MIC Whispers',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -0.5,
-                    color: Colors.white,
+                    color: AppTheme.textPrimary(context),
                   ),
                 ),
                 Row(
@@ -509,11 +627,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       ),
                     ),
                     const SizedBox(width: 5),
-                    const Text(
+                    Text(
                       'Cloud Sync • Live',
                       style: TextStyle(
                         fontSize: 11,
-                        color: Color(0xFF94A3B8),
+                        color: AppTheme.textSecondary(context),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -524,6 +642,28 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           ],
         ),
         actions: [
+          ValueListenableBuilder<ThemeMode>(
+            valueListenable: AppTheme.themeNotifier,
+            builder: (context, currentMode, _) {
+              final isDark = currentMode == ThemeMode.dark;
+              return IconButton(
+                icon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  transitionBuilder: (child, anim) => RotationTransition(
+                    turns: anim,
+                    child: FadeTransition(opacity: anim, child: child),
+                  ),
+                  child: Icon(
+                    isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                    key: ValueKey(isDark),
+                    color: isDark ? const Color(0xFFFACC15) : const Color(0xFF0F172A),
+                  ),
+                ),
+                tooltip: isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme',
+                onPressed: () => AppTheme.toggleTheme(),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.auto_awesome, color: Color(0xFFF59E0B)),
             tooltip: 'Product Roadmap & AI Scope',
@@ -536,29 +676,29 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           ? _buildRealtimeFeedView()
           : const PersonaProfileView(),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           border: Border(
-            top: BorderSide(color: Color(0xFF334155), width: 0.8),
+            top: BorderSide(color: AppTheme.border(context), width: 0.8),
           ),
         ),
         child: NavigationBar(
-          backgroundColor: const Color(0xFF0F172A),
+          backgroundColor: AppTheme.cardBg(context),
           indicatorColor: const Color(0x3310B981),
           selectedIndex: _currentTabIndex,
           onDestinationSelected: (index) {
             setState(() => _currentTabIndex = index);
           },
-          destinations: const [
+          destinations: [
             NavigationDestination(
-              icon: Icon(Icons.dynamic_feed_rounded, color: Color(0xFF94A3B8)),
+              icon: Icon(Icons.dynamic_feed_rounded, color: AppTheme.textSecondary(context)),
               selectedIcon:
-                  Icon(Icons.dynamic_feed_rounded, color: Color(0xFF10B981)),
+                  const Icon(Icons.dynamic_feed_rounded, color: Color(0xFF10B981)),
               label: 'Live Whispers',
             ),
             NavigationDestination(
-              icon: Icon(Icons.person_outline_rounded, color: Color(0xFF94A3B8)),
+              icon: Icon(Icons.person_outline_rounded, color: AppTheme.textSecondary(context)),
               selectedIcon:
-                  Icon(Icons.person_rounded, color: Color(0xFF10B981)),
+                  const Icon(Icons.person_rounded, color: Color(0xFF10B981)),
               label: 'My Persona',
             ),
           ],
@@ -614,16 +754,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                    color: isSelected ? Colors.black : Colors.white,
+                    color: isSelected ? Colors.black : AppTheme.textPrimary(context),
                   ),
                 ),
                 selected: isSelected,
                 selectedColor: const Color(0xFF10B981),
-                backgroundColor: const Color(0xFF1E293B),
+                backgroundColor: AppTheme.cardBg(context),
                 side: BorderSide(
                   color: isSelected
                       ? const Color(0xFF10B981)
-                      : const Color(0xFF334155),
+                      : AppTheme.border(context),
                 ),
                 onSelected: (selected) {
                   if (selected) setState(() => _selectedFilter = filter);
@@ -669,18 +809,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       const Icon(Icons.chat_bubble_outline_rounded,
                           size: 54, color: Color(0xFF64748B)),
                       const SizedBox(height: 12),
-                      const Text(
+                      Text(
                         'No campus whispers yet!',
                         style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white),
+                            color: AppTheme.textPrimary(context)),
                       ),
                       const SizedBox(height: 6),
-                      const Text(
+                      Text(
                         'Be the first student to whisper to MIC Campus.',
                         style:
-                            TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
+                            TextStyle(fontSize: 12, color: AppTheme.textSecondary(context)),
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
@@ -750,7 +890,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF1E293B),
+      backgroundColor: AppTheme.cardBg(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -774,23 +914,23 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                         width: 40,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade600,
+                          color: AppTheme.border(context),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       '🤫 Whisper to MIC Campus',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppTheme.textPrimary(context),
                       ),
                     ),
-                    const Text(
+                    Text(
                       'Encrypted & Anonymous • Instantly syncs across campus',
-                      style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
+                      style: TextStyle(fontSize: 12, color: AppTheme.textSecondary(context)),
                     ),
                     const SizedBox(height: 16),
 
@@ -798,6 +938,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     Row(
                       children: [
                         _buildTypeTab(
+                          context: context,
                           icon: Icons.chat_rounded,
                           label: 'Text',
                           isSelected: postType == 'text',
@@ -805,6 +946,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                         ),
                         const SizedBox(width: 8),
                         _buildTypeTab(
+                          context: context,
                           icon: Icons.image_rounded,
                           label: 'Image',
                           isSelected: postType == 'image',
@@ -812,6 +954,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                         ),
                         const SizedBox(width: 8),
                         _buildTypeTab(
+                          context: context,
                           icon: Icons.poll_rounded,
                           label: 'Campus Poll',
                           isSelected: postType == 'poll',
@@ -838,12 +981,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
-                              color: isSelected ? Colors.black : Colors.white,
+                              color: isSelected ? Colors.black : AppTheme.textPrimary(context),
                             ),
                           ),
                           selected: isSelected,
                           selectedColor: const Color(0xFFF59E0B),
-                          backgroundColor: const Color(0xFF0F172A),
+                          backgroundColor: AppTheme.pillBg(context),
+                          side: BorderSide(
+                            color: isSelected
+                                ? const Color(0xFFF59E0B)
+                                : AppTheme.border(context),
+                          ),
                           onSelected: (val) {
                             if (val) setModalState(() => category = cat);
                           },
@@ -857,18 +1005,21 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     TextField(
                       controller: textController,
                       maxLines: 3,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: AppTheme.textPrimary(context)),
                       decoration: InputDecoration(
                         hintText: postType == 'poll'
                             ? 'What is the poll question for campus?'
                             : 'What is happening on campus right now?',
-                        hintStyle: const TextStyle(color: Color(0xFF64748B)),
+                        hintStyle: TextStyle(color: AppTheme.textSecondary(context)),
                         filled: true,
-                        fillColor: const Color(0xFF0F172A),
+                        fillColor: AppTheme.inputBg(context),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide:
-                              const BorderSide(color: Color(0xFF334155)),
+                          borderSide: BorderSide(color: AppTheme.border(context)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(color: AppTheme.border(context)),
                         ),
                       ),
                     ),
@@ -940,26 +1091,38 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       const SizedBox(height: 12),
                       TextField(
                         controller: pollOption1,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: AppTheme.textPrimary(context)),
                         decoration: InputDecoration(
                           labelText: 'Option 1',
+                          labelStyle: TextStyle(color: AppTheme.textSecondary(context)),
                           filled: true,
-                          fillColor: const Color(0xFF0F172A),
+                          fillColor: AppTheme.inputBg(context),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: AppTheme.border(context)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: AppTheme.border(context)),
                           ),
                         ),
                       ),
                       const SizedBox(height: 8),
                       TextField(
                         controller: pollOption2,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: AppTheme.textPrimary(context)),
                         decoration: InputDecoration(
                           labelText: 'Option 2',
+                          labelStyle: TextStyle(color: AppTheme.textSecondary(context)),
                           filled: true,
-                          fillColor: const Color(0xFF0F172A),
+                          fillColor: AppTheme.inputBg(context),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: AppTheme.border(context)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: AppTheme.border(context)),
                           ),
                         ),
                       ),
@@ -1055,23 +1218,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                                     'createdAt': FieldValue.serverTimestamp(),
                                   });
 
-                                  if (context.mounted) {
-                                    Navigator.pop(ctx);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                            '🚀 Your Whisper is live on campus!'),
-                                        backgroundColor: Color(0xFF10B981),
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
-                                  }
+                                  if (ctx.mounted) Navigator.pop(ctx);
                                 } catch (e) {
                                   setModalState(() => isPublishing = false);
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
+                                  if (ctx.mounted) {
+                                    ScaffoldMessenger.of(ctx).showSnackBar(
                                       SnackBar(
-                                        content: Text('Publish error: $e'),
+                                        content: Text('Failed to publish: $e'),
                                         backgroundColor: Colors.redAccent,
                                       ),
                                     );
@@ -1087,12 +1240,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                                   color: Colors.black,
                                 ),
                               )
-                            : const Icon(Icons.rocket_launch_rounded),
+                            : const Icon(Icons.send_rounded, size: 18),
                         label: Text(
-                          isPublishing ? 'Publishing...' : 'Publish Whisper',
+                          isPublishing
+                              ? 'Publishing Whisper...'
+                              : 'Whisper Anonymously',
                           style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
                           ),
                         ),
                       ),
@@ -1108,6 +1263,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   Widget _buildTypeTab({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required bool isSelected,
@@ -1122,12 +1278,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           decoration: BoxDecoration(
             color: isSelected
                 ? const Color(0x2610B981)
-                : const Color(0xFF0F172A),
+                : AppTheme.pillBg(context),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected
                   ? const Color(0xFF10B981)
-                  : const Color(0xFF334155),
+                  : AppTheme.border(context),
             ),
           ),
           child: Row(
@@ -1137,14 +1293,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   size: 16,
                   color: isSelected
                       ? const Color(0xFF10B981)
-                      : const Color(0xFF94A3B8)),
+                      : AppTheme.textSecondary(context)),
               const SizedBox(width: 6),
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                  color: isSelected
+                      ? (AppTheme.isDark(context) ? Colors.white : const Color(0xFF059669))
+                      : AppTheme.textSecondary(context),
                 ),
               ),
             ],
@@ -1159,16 +1317,20 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          backgroundColor: const Color(0xFF1E293B),
+          backgroundColor: AppTheme.cardBg(context),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: const Row(
+          title: Row(
             children: [
-              Icon(Icons.auto_awesome, color: Color(0xFFF59E0B)),
-              SizedBox(width: 8),
+              const Icon(Icons.auto_awesome, color: Color(0xFFF59E0B)),
+              const SizedBox(width: 8),
               Text(
                 'MIC Whispers v2.0 Scope',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary(context),
+                ),
               ),
             ],
           ),
@@ -1177,6 +1339,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildScopeItem(
+                context: context,
                 icon: Icons.security_rounded,
                 title: 'AI Content Moderation',
                 desc:
@@ -1184,6 +1347,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               ),
               const SizedBox(height: 12),
               _buildScopeItem(
+                context: context,
                 icon: Icons.location_on_rounded,
                 title: 'Campus Geofencing',
                 desc:
@@ -1191,6 +1355,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               ),
               const SizedBox(height: 12),
               _buildScopeItem(
+                context: context,
                 icon: Icons.mic_rounded,
                 title: 'Voice Notes Whisper',
                 desc:
@@ -1198,6 +1363,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               ),
               const SizedBox(height: 12),
               _buildScopeItem(
+                context: context,
                 icon: Icons.work_outline_rounded,
                 title: 'Wellnoc Solutions Internships',
                 desc:
@@ -1218,6 +1384,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   Widget _buildScopeItem({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String desc,
@@ -1228,8 +1395,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: const Color(0xFF0F172A),
+            color: AppTheme.pillBg(context),
             borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppTheme.border(context)),
           ),
           child: Icon(icon, size: 16, color: const Color(0xFFF59E0B)),
         ),
@@ -1240,20 +1408,125 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppTheme.textPrimary(context),
                 ),
               ),
               Text(
                 desc,
-                style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+                style: TextStyle(fontSize: 11, color: AppTheme.textSecondary(context)),
               ),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+/* ============================================================================
+   FULL-SCREEN INTERACTIVE IMAGE VIEWER (Pinch-to-zoom & Pan)
+============================================================================ */
+
+class FullScreenImageViewer extends StatelessWidget {
+  final String imageUrl;
+  final String authorHandle;
+  final String content;
+
+  const FullScreenImageViewer({
+    super.key,
+    required this.imageUrl,
+    this.authorHandle = '',
+    this.content = '',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black.withValues(alpha: 0.8),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              authorHandle.isNotEmpty ? authorHandle : 'Campus Image',
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            if (content.isNotEmpty)
+              Text(
+                content,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+              ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.close_rounded, color: Colors.white),
+            tooltip: 'Close',
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+      body: Center(
+        child: InteractiveViewer(
+          minScale: 0.5,
+          maxScale: 4.0,
+          panEnabled: true,
+          scaleEnabled: true,
+          child: Image.network(
+            imageUrl,
+            fit: BoxFit.contain,
+            loadingBuilder: (ctx, child, progress) {
+              if (progress == null) return child;
+              return const Center(
+                child: CircularProgressIndicator(color: Color(0xFF10B981)),
+              );
+            },
+            errorBuilder: (_, __, ___) => const Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.broken_image_rounded, color: Colors.grey, size: 48),
+                  SizedBox(height: 8),
+                  Text('Failed to load image', style: TextStyle(color: Colors.grey)),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+      bottomNavigationBar: Container(
+        color: Colors.black.withValues(alpha: 0.8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: const SafeArea(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.pinch_rounded, size: 16, color: Color(0xFF94A3B8)),
+              SizedBox(width: 8),
+              Text(
+                'Pinch to zoom in/out • Drag to explore',
+                style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -1294,13 +1567,23 @@ class WhisperCard extends StatelessWidget {
         ? DateFormat('h:mm a').format(timestamp.toDate())
         : 'Just now';
 
+    final isDark = AppTheme.isDark(context);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: AppTheme.cardBg(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF334155), width: 0.8),
+        border: Border.all(color: AppTheme.border(context), width: 0.8),
+        boxShadow: [
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1326,17 +1609,17 @@ class WhisperCard extends StatelessWidget {
                   children: [
                     Text(
                       authorHandle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 13,
-                        color: Colors.white,
+                        color: AppTheme.textPrimary(context),
                       ),
                     ),
                     Text(
                       '$authorDept • $timeString',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: Color(0xFF94A3B8),
+                        color: AppTheme.textSecondary(context),
                       ),
                     ),
                   ],
@@ -1346,9 +1629,9 @@ class WhisperCard extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A),
+                  color: AppTheme.pillBg(context),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFF334155)),
+                  border: Border.all(color: AppTheme.border(context)),
                 ),
                 child: Text(
                   category,
@@ -1368,42 +1651,90 @@ class WhisperCard extends StatelessWidget {
           if (content.isNotEmpty)
             Text(
               content,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 height: 1.45,
-                color: Color(0xFFF1F5F9),
+                color: AppTheme.textPrimary(context),
               ),
             ),
 
-          // Image Attachment
+          // Image Attachment with Full-Screen Zoom Viewer on Tap
           if (postType == 'image' && imageUrl != null && imageUrl.isNotEmpty) ...[
             const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.network(
-                imageUrl,
-                width: double.infinity,
-                height: 220,
-                fit: BoxFit.cover,
-                loadingBuilder: (ctx, child, progress) {
-                  if (progress == null) return child;
-                  return Container(
-                    height: 200,
-                    color: const Color(0xFF0F172A),
-                    child: const Center(
-                      child:
-                          CircularProgressIndicator(color: Color(0xFF10B981)),
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => FullScreenImageViewer(
+                      imageUrl: imageUrl,
+                      authorHandle: authorHandle,
+                      content: content,
                     ),
-                  );
-                },
-                errorBuilder: (_, __, ___) => Container(
-                  height: 120,
-                  color: const Color(0xFF0F172A),
-                  child: const Center(
-                    child: Text('Image failed to load',
-                        style: TextStyle(color: Colors.grey)),
                   ),
-                ),
+                );
+              },
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.network(
+                      imageUrl,
+                      width: double.infinity,
+                      height: 220,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (ctx, child, progress) {
+                        if (progress == null) return child;
+                        return Container(
+                          height: 200,
+                          color: AppTheme.pillBg(context),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                                color: Color(0xFF10B981)),
+                          ),
+                        );
+                      },
+                      errorBuilder: (_, __, ___) => Container(
+                        height: 120,
+                        color: AppTheme.pillBg(context),
+                        child: const Center(
+                          child: Text('Image failed to load',
+                              style: TextStyle(color: Colors.grey)),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 10,
+                    right: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.75),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.3),
+                            width: 0.8),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.zoom_in_rounded,
+                              size: 14, color: Colors.white),
+                          SizedBox(width: 4),
+                          Text(
+                            'Tap to expand',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -1429,12 +1760,12 @@ class WhisperCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isLiked
                         ? const Color(0x3310B981)
-                        : const Color(0xFF0F172A),
+                        : AppTheme.pillBg(context),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isLiked
                           ? const Color(0xFF10B981)
-                          : const Color(0xFF334155),
+                          : AppTheme.border(context),
                     ),
                   ),
                   child: Row(
@@ -1446,7 +1777,7 @@ class WhisperCard extends StatelessWidget {
                         size: 15,
                         color: isLiked
                             ? const Color(0xFF10B981)
-                            : const Color(0xFF94A3B8),
+                            : AppTheme.textSecondary(context),
                       ),
                       const SizedBox(width: 6),
                       Text(
@@ -1456,7 +1787,7 @@ class WhisperCard extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           color: isLiked
                               ? const Color(0xFF10B981)
-                              : Colors.white,
+                              : AppTheme.textPrimary(context),
                         ),
                       ),
                     ],
@@ -1477,12 +1808,12 @@ class WhisperCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isDisliked
                         ? Colors.redAccent.withValues(alpha: 0.2)
-                        : const Color(0xFF0F172A),
+                        : AppTheme.pillBg(context),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isDisliked
                           ? Colors.redAccent
-                          : const Color(0xFF334155),
+                          : AppTheme.border(context),
                     ),
                   ),
                   child: Icon(
@@ -1492,7 +1823,7 @@ class WhisperCard extends StatelessWidget {
                     size: 15,
                     color: isDisliked
                         ? Colors.redAccent
-                        : const Color(0xFF94A3B8),
+                        : AppTheme.textSecondary(context),
                   ),
                 ),
               ),
@@ -1507,23 +1838,23 @@ class WhisperCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A),
+                    color: AppTheme.pillBg(context),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF334155)),
+                    border: Border.all(color: AppTheme.border(context)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.chat_bubble_outline_rounded,
                         size: 15,
-                        color: Color(0xFF94A3B8),
+                        color: AppTheme.textSecondary(context),
                       ),
                       const SizedBox(width: 6),
                       Text(
                         '$commentsCount',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF94A3B8),
+                          color: AppTheme.textSecondary(context),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -1537,7 +1868,7 @@ class WhisperCard extends StatelessWidget {
               // Share Icon
               IconButton(
                 icon: const Icon(Icons.share_outlined, size: 16),
-                color: const Color(0xFF94A3B8),
+                color: AppTheme.textSecondary(context),
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -1610,12 +1941,12 @@ class WhisperCard extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFF0F172A),
+                color: AppTheme.pillBg(context),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isSelected
                       ? const Color(0xFF10B981)
-                      : const Color(0xFF334155),
+                      : AppTheme.border(context),
                 ),
               ),
               child: Stack(
@@ -1627,7 +1958,9 @@ class WhisperCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? const Color(0x3310B981)
-                            : const Color(0x1A94A3B8),
+                            : (AppTheme.isDark(context)
+                                ? const Color(0x1A94A3B8)
+                                : const Color(0x1A000000)),
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
@@ -1644,14 +1977,14 @@ class WhisperCard extends StatelessWidget {
                               : FontWeight.normal,
                           color: isSelected
                               ? const Color(0xFF10B981)
-                              : Colors.white,
+                              : AppTheme.textPrimary(context),
                         ),
                       ),
                       Text(
                         '${(percent * 100).toInt()}% ($voteCount)',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF94A3B8),
+                          color: AppTheme.textSecondary(context),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -1719,7 +2052,7 @@ class WhisperCard extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF1E293B),
+      backgroundColor: AppTheme.cardBg(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -1741,18 +2074,18 @@ class WhisperCard extends StatelessWidget {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade600,
+                      color: AppTheme.border(context),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'Campus Comments',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppTheme.textPrimary(context),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -1776,10 +2109,10 @@ class WhisperCard extends StatelessWidget {
                       final commentDocs = snapshot.data?.docs ?? [];
 
                       if (commentDocs.isEmpty) {
-                        return const Center(
+                        return Center(
                           child: Text(
                             'No comments yet. Be the first to drop a reply!',
-                            style: TextStyle(color: Color(0xFF94A3B8)),
+                            style: TextStyle(color: AppTheme.textSecondary(context)),
                           ),
                         );
                       }
@@ -1787,7 +2120,7 @@ class WhisperCard extends StatelessWidget {
                       return ListView.separated(
                         itemCount: commentDocs.length,
                         separatorBuilder: (_, __) =>
-                            const Divider(color: Color(0xFF334155)),
+                            Divider(color: AppTheme.border(context)),
                         itemBuilder: (context, idx) {
                           final cData =
                               commentDocs[idx].data() as Map<String, dynamic>;
@@ -1821,18 +2154,18 @@ class WhisperCard extends StatelessWidget {
                                     children: [
                                       Text(
                                         author,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.bold,
-                                          color: Color(0xFF94A3B8),
+                                          color: AppTheme.textSecondary(context),
                                         ),
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
                                         text,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 13,
-                                          color: Colors.white,
+                                          color: AppTheme.textPrimary(context),
                                         ),
                                       ),
                                     ],
@@ -1855,19 +2188,24 @@ class WhisperCard extends StatelessWidget {
                       Expanded(
                         child: TextField(
                           controller: commentController,
-                          style: const TextStyle(color: Colors.white),
+                          style: TextStyle(color: AppTheme.textPrimary(context)),
                           decoration: InputDecoration(
                             hintText: 'Add an anonymous campus reply...',
                             hintStyle:
-                                const TextStyle(color: Color(0xFF94A3B8)),
+                                TextStyle(color: AppTheme.textSecondary(context)),
                             filled: true,
-                            fillColor: const Color(0xFF0F172A),
+                            fillColor: AppTheme.inputBg(context),
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 12),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide:
-                                  const BorderSide(color: Color(0xFF334155)),
+                                  BorderSide(color: AppTheme.border(context)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide:
+                                  BorderSide(color: AppTheme.border(context)),
                             ),
                           ),
                         ),
@@ -1938,6 +2276,7 @@ class PersonaProfileView extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final userId = user?.uid ?? '';
+    final isDark = AppTheme.isDark(context);
 
     return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance
@@ -1961,13 +2300,23 @@ class PersonaProfileView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? const [Color(0xFF1E293B), Color(0xFF0F172A)]
+                        : const [Colors.white, Color(0xFFF1F5F9)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFF334155)),
+                  border: Border.all(color: AppTheme.border(context)),
+                  boxShadow: [
+                    if (!isDark)
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                  ],
                 ),
                 child: Column(
                   children: [
@@ -1980,10 +2329,10 @@ class PersonaProfileView extends StatelessWidget {
                           width: 2,
                         ),
                       ),
-                      child: const CircleAvatar(
+                      child: CircleAvatar(
                         radius: 36,
-                        backgroundColor: Color(0xFF1E293B),
-                        child: Icon(
+                        backgroundColor: AppTheme.cardBg(context),
+                        child: const Icon(
                           Icons.shield_outlined,
                           size: 40,
                           color: Color(0xFF10B981),
@@ -1993,26 +2342,26 @@ class PersonaProfileView extends StatelessWidget {
                     const SizedBox(height: 12),
                     Text(
                       handle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w900,
-                        color: Colors.white,
+                        color: AppTheme.textPrimary(context),
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '$dept\nMIC Arts & Science College, Kasaragod',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF94A3B8),
+                        color: AppTheme.textSecondary(context),
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       email,
-                      style: const TextStyle(
-                          fontSize: 11, color: Color(0xFF64748B)),
+                      style: TextStyle(
+                          fontSize: 11, color: AppTheme.textSecondary(context)),
                     ),
                     const SizedBox(height: 16),
                     Container(
@@ -2035,7 +2384,74 @@ class PersonaProfileView extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
+
+              // Theme Switcher Card
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppTheme.cardBg(context),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppTheme.border(context)),
+                  boxShadow: [
+                    if (!isDark)
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0x33F59E0B)
+                            : const Color(0x26059669),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                        color: isDark ? const Color(0xFFFACC15) : const Color(0xFF059669),
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Appearance Theme',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: AppTheme.textPrimary(context),
+                            ),
+                          ),
+                          Text(
+                            isDark ? 'Dark Cyber Mode' : 'Light Clean Mode',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.textSecondary(context),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Switch.adaptive(
+                      value: !isDark,
+                      activeThumbColor: const Color(0xFF10B981),
+                      activeTrackColor: const Color(0x6610B981),
+                      onChanged: (_) => AppTheme.toggleTheme(),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
 
               // Query User's Whispers & Calculate Stats
               StreamBuilder<QuerySnapshot>(
@@ -2055,6 +2471,7 @@ class PersonaProfileView extends StatelessWidget {
                     children: [
                       Expanded(
                         child: _buildStatCard(
+                          context: context,
                           title: 'My Whispers',
                           value: '${myWhispers.length}',
                           icon: Icons.chat_bubble_outline_rounded,
@@ -2064,6 +2481,7 @@ class PersonaProfileView extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _buildStatCard(
+                          context: context,
                           title: 'Total Upvotes',
                           value: '$totalUpvotes',
                           icon: Icons.thumb_up_alt_rounded,
@@ -2073,6 +2491,7 @@ class PersonaProfileView extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _buildStatCard(
+                          context: context,
                           title: 'Campus Karma',
                           value: '#${(150 - totalUpvotes).clamp(1, 150)}',
                           icon: Icons.emoji_events_outlined,
@@ -2118,17 +2537,28 @@ class PersonaProfileView extends StatelessWidget {
   }
 
   Widget _buildStatCard({
+    required BuildContext context,
     required String title,
     required String value,
     required IconData icon,
     required Color color,
   }) {
+    final isDark = AppTheme.isDark(context);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: AppTheme.cardBg(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF334155)),
+        border: Border.all(color: AppTheme.border(context)),
+        boxShadow: [
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+        ],
       ),
       child: Column(
         children: [
@@ -2136,16 +2566,16 @@ class PersonaProfileView extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w900,
-              color: Colors.white,
+              color: AppTheme.textPrimary(context),
             ),
           ),
           const SizedBox(height: 2),
           Text(
             title,
-            style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
+            style: TextStyle(fontSize: 10, color: AppTheme.textSecondary(context)),
           ),
         ],
       ),

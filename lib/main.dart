@@ -899,7 +899,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                             ),
                           ),
                           Text(
-                            'Kasaragod • Kannur University',
+                            'Chattanchal • Kannur University',
                             style: TextStyle(
                               fontSize: 11,
                               color: AppTheme.textSecondary(context),
@@ -2670,7 +2670,7 @@ class PersonaProfileView extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '$dept\nMIC Arts & Science College, Kasaragod',
+                      '$dept\nMIC Arts & Science College, Chattanchal',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 12,

@@ -105,7 +105,7 @@ class MicWhispersApp extends StatelessWidget {
       valueListenable: AppTheme.themeNotifier,
       builder: (context, currentMode, _) {
         return MaterialApp(
-          title: 'MIC Whispers',
+          title: 'MIC Chat',
           debugShowCheckedModeBanner: false,
           themeMode: currentMode,
           theme: AppTheme.lightTheme,
@@ -241,7 +241,7 @@ class _LoginScreenState extends State<LoginScreen> {
         password: demoPassword,
       );
       if (cred.user != null) {
-        final demoHandle = 'Campus Whisperer #$randomId';
+        final demoHandle = 'Campus Member #$randomId';
         await cred.user!.updateDisplayName(demoHandle);
         await FirebaseFirestore.instance
             .collection('users')
@@ -309,7 +309,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'MIC Whispers',
+                      'MIC Chat',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w900,
@@ -319,7 +319,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Encrypted Campus Social Hub • MIC Arts & Science College',
+                      'Campus Chat & Community • MIC Arts & Science College',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 13, color: AppTheme.textSecondary(context)),
                     ),
@@ -614,7 +614,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'MIC Whispers',
+                    'MIC Chat',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w900,
@@ -650,7 +650,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 _buildDesktopNavButton(
                   context: context,
                   icon: Icons.dynamic_feed_rounded,
-                  label: 'Live Whispers',
+                  label: 'Live Chat',
                   isSelected: _currentTabIndex == 0,
                   onTap: () => setState(() => _currentTabIndex = 0),
                 ),
@@ -746,7 +746,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     icon: Icon(Icons.dynamic_feed_rounded, color: AppTheme.textSecondary(context)),
                     selectedIcon:
                         const Icon(Icons.dynamic_feed_rounded, color: Color(0xFF10B981)),
-                    label: 'Live Whispers',
+                    label: 'Live Chat',
                   ),
                   NavigationDestination(
                     icon: Icon(Icons.person_outline_rounded, color: AppTheme.textSecondary(context)),
@@ -764,7 +764,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               foregroundColor: Colors.black,
               icon: const Icon(Icons.add_rounded, size: 22),
               label: const Text(
-                'Post Whisper',
+                'New Message',
                 style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14),
               ),
             )
@@ -841,7 +841,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               ),
               icon: const Icon(Icons.add_rounded, size: 22),
               label: const Text(
-                'Post Campus Whisper',
+                'Post in MIC Chat',
                 style: TextStyle(
                   fontWeight: FontWeight.w900,
                   fontSize: 14,
@@ -1121,7 +1121,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                           size: 54, color: Color(0xFF64748B)),
                       const SizedBox(height: 12),
                       Text(
-                        'No campus whispers yet!',
+                        'No campus messages yet!',
                         style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -1129,7 +1129,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Be the first student to whisper to MIC Campus.',
+                        'Be the first student to send a message to MIC Chat.',
                         style:
                             TextStyle(fontSize: 12, color: AppTheme.textSecondary(context)),
                       ),
@@ -1141,7 +1141,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                           foregroundColor: Colors.black,
                         ),
                         icon: const Icon(Icons.add_rounded),
-                        label: const Text('Post First Whisper'),
+                        label: const Text('Send First Message'),
                       ),
                     ],
                   ),
@@ -1233,7 +1233,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '🤫 Whisper to MIC Campus',
+                      '💬 Post to MIC Chat',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -1555,8 +1555,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                             : const Icon(Icons.send_rounded, size: 18),
                         label: Text(
                           isPublishing
-                              ? 'Publishing Whisper...'
-                              : 'Whisper Anonymously',
+                              ? 'Publishing Message...'
+                              : 'Post to MIC Chat',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
@@ -1637,7 +1637,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               const Icon(Icons.auto_awesome, color: Color(0xFFF59E0B)),
               const SizedBox(width: 8),
               Text(
-                'MIC Whispers v2.0 Scope',
+                'MIC Chat v2.0 Scope',
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
@@ -1655,7 +1655,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 icon: Icons.security_rounded,
                 title: 'AI Content Moderation',
                 desc:
-                    'Google Gemini AI checks whispers before publishing to filter toxic content.',
+                    'Google Gemini AI checks messages before publishing to filter toxic content.',
               ),
               const SizedBox(height: 12),
               _buildScopeItem(
@@ -1669,7 +1669,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               _buildScopeItem(
                 context: context,
                 icon: Icons.mic_rounded,
-                title: 'Voice Notes Whisper',
+                title: 'Voice Notes in Chat',
                 desc:
                     '10-second anonymous voice notes with pitch modulation.',
               ),
@@ -2191,7 +2191,7 @@ class WhisperCard extends StatelessWidget {
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Whisper link ready to share on campus!'),
+                      content: Text('Chat link ready to share on campus!'),
                       backgroundColor: Color(0xFF10B981),
                       behavior: SnackBarBehavior.floating,
                       duration: Duration(seconds: 2),

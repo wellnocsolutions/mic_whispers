@@ -584,62 +584,88 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth >= 880;
+
     return Scaffold(
       backgroundColor: AppTheme.bg(context),
       appBar: AppBar(
         backgroundColor: AppTheme.cardBg(context),
         elevation: 0,
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0x2610B981),
-                borderRadius: BorderRadius.circular(12),
+        centerTitle: false,
+        title: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1120),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0x2610B981),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.chat_bubble_outline_rounded,
+                  color: Color(0xFF10B981),
+                  size: 20,
+                ),
               ),
-              child: const Icon(
-                Icons.chat_bubble_outline_rounded,
-                color: Color(0xFF10B981),
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'MIC Whispers',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.5,
-                    color: AppTheme.textPrimary(context),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'MIC Whispers',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                      color: AppTheme.textPrimary(context),
+                    ),
                   ),
-                ),
-                Row(
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF10B981),
-                        shape: BoxShape.circle,
+                  Row(
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF10B981),
+                          shape: BoxShape.circle,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'Cloud Sync • Live',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: AppTheme.textSecondary(context),
-                        fontWeight: FontWeight.w500,
+                      const SizedBox(width: 5),
+                      Text(
+                        'Cloud Sync • Live',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppTheme.textSecondary(context),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                ],
+              ),
+              if (isDesktop) ...[
+                const Spacer(),
+                _buildDesktopNavButton(
+                  context: context,
+                  icon: Icons.dynamic_feed_rounded,
+                  label: 'Live Whispers',
+                  isSelected: _currentTabIndex == 0,
+                  onTap: () => setState(() => _currentTabIndex = 0),
                 ),
+                const SizedBox(width: 10),
+                _buildDesktopNavButton(
+                  context: context,
+                  icon: Icons.person_rounded,
+                  label: 'My Persona',
+                  isSelected: _currentTabIndex == 1,
+                  onTap: () => setState(() => _currentTabIndex = 1),
+                ),
+                const Spacer(),
               ],
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           ValueListenableBuilder<ThemeMode>(
@@ -669,42 +695,69 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             tooltip: 'Product Roadmap & AI Scope',
             onPressed: () => _showRoadmapDialog(context),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
         ],
       ),
-      body: _currentTabIndex == 0
-          ? _buildRealtimeFeedView()
-          : const PersonaProfileView(),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(color: AppTheme.border(context), width: 0.8),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: isDesktop ? 1080 : 660),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: isDesktop ? 16 : 0),
+            child: isDesktop && _currentTabIndex == 0
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Main Realtime Feed Column
+                      Expanded(
+                        flex: 64,
+                        child: _buildRealtimeFeedView(isDesktop),
+                      ),
+                      const SizedBox(width: 24),
+                      // Desktop Info & Actions Sidebar
+                      Expanded(
+                        flex: 36,
+                        child: _buildDesktopSidebar(),
+                      ),
+                    ],
+                  )
+                : (_currentTabIndex == 0
+                    ? _buildRealtimeFeedView(isDesktop)
+                    : const PersonaProfileView()),
           ),
         ),
-        child: NavigationBar(
-          backgroundColor: AppTheme.cardBg(context),
-          indicatorColor: const Color(0x3310B981),
-          selectedIndex: _currentTabIndex,
-          onDestinationSelected: (index) {
-            setState(() => _currentTabIndex = index);
-          },
-          destinations: [
-            NavigationDestination(
-              icon: Icon(Icons.dynamic_feed_rounded, color: AppTheme.textSecondary(context)),
-              selectedIcon:
-                  const Icon(Icons.dynamic_feed_rounded, color: Color(0xFF10B981)),
-              label: 'Live Whispers',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.person_outline_rounded, color: AppTheme.textSecondary(context)),
-              selectedIcon:
-                  const Icon(Icons.person_rounded, color: Color(0xFF10B981)),
-              label: 'My Persona',
-            ),
-          ],
-        ),
       ),
-      floatingActionButton: _currentTabIndex == 0
+      bottomNavigationBar: isDesktop
+          ? null
+          : Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: AppTheme.border(context), width: 0.8),
+                ),
+              ),
+              child: NavigationBar(
+                backgroundColor: AppTheme.cardBg(context),
+                indicatorColor: const Color(0x3310B981),
+                selectedIndex: _currentTabIndex,
+                onDestinationSelected: (index) {
+                  setState(() => _currentTabIndex = index);
+                },
+                destinations: [
+                  NavigationDestination(
+                    icon: Icon(Icons.dynamic_feed_rounded, color: AppTheme.textSecondary(context)),
+                    selectedIcon:
+                        const Icon(Icons.dynamic_feed_rounded, color: Color(0xFF10B981)),
+                    label: 'Live Whispers',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.person_outline_rounded, color: AppTheme.textSecondary(context)),
+                    selectedIcon:
+                        const Icon(Icons.person_rounded, color: Color(0xFF10B981)),
+                    label: 'My Persona',
+                  ),
+                ],
+              ),
+            ),
+      floatingActionButton: (!isDesktop && _currentTabIndex == 0)
           ? FloatingActionButton.extended(
               onPressed: () => _showPostWhisperSheet(context),
               backgroundColor: const Color(0xFF10B981),
@@ -719,11 +772,269 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
+  Widget _buildDesktopNavButton({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? (AppTheme.isDark(context) ? const Color(0x3310B981) : const Color(0x1F059669))
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF10B981) : Colors.transparent,
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? const Color(0xFF10B981) : AppTheme.textSecondary(context),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                color: isSelected ? AppTheme.textPrimary(context) : AppTheme.textSecondary(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDesktopSidebar() {
+    final isDark = AppTheme.isDark(context);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(top: 8, bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Post Whisper Action Button
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton.icon(
+              onPressed: () => _showPostWhisperSheet(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                foregroundColor: Colors.black,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              icon: const Icon(Icons.add_rounded, size: 22),
+              label: const Text(
+                'Post Campus Whisper',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          // Campus & Workshop Card
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: AppTheme.cardBg(context),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppTheme.border(context), width: 0.8),
+              boxShadow: [
+                if (!isDark)
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0x2610B981),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.school_rounded,
+                        color: Color(0xFF10B981),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'MIC Arts & Science',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 14,
+                              color: AppTheme.textPrimary(context),
+                            ),
+                          ),
+                          Text(
+                            'Kasaragod • Kannur University',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: AppTheme.textSecondary(context),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Divider(color: AppTheme.border(context), height: 1),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    const Icon(Icons.bolt_rounded, size: 16, color: Color(0xFFF59E0B)),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Flutter Fusion Workshop',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary(context),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Department of BSc Computer Science\nOrganized by Wellnoc Solutions',
+                  style: TextStyle(
+                    fontSize: 11,
+                    height: 1.4,
+                    color: AppTheme.textSecondary(context),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0x2610B981),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.wifi_tethering_rounded, size: 14, color: Color(0xFF10B981)),
+                      SizedBox(width: 6),
+                      Text(
+                        'Cloud Sync: Live Firebase',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF10B981),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          // Trending Campus Topics Card
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: AppTheme.cardBg(context),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppTheme.border(context), width: 0.8),
+              boxShadow: [
+                if (!isDark)
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Trending on Campus',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: AppTheme.textPrimary(context),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    '#FlutterFusion',
+                    '#Wellnoc',
+                    '#ExamPrep',
+                    '#CanteenChai',
+                    '#LabViva',
+                    '#MICCampus',
+                  ].map((tag) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: AppTheme.pillBg(context),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppTheme.border(context)),
+                      ),
+                      child: Text(
+                        tag,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.textSecondary(context),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   /* ==========================================================================
      FIRESTORE REAL-TIME STREAM FEED
   ========================================================================== */
 
-  Widget _buildRealtimeFeedView() {
+  Widget _buildRealtimeFeedView([bool isDesktop = false]) {
     final filters = [
       '🔥 Top Liked',
       '⏱️ Recent',
@@ -859,7 +1170,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               }
 
               return ListView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 90),
+                padding: EdgeInsets.fromLTRB(16, 8, 16, isDesktop ? 24 : 90),
                 itemCount: filteredDocs.length,
                 itemBuilder: (context, index) {
                   final doc = filteredDocs[index];
@@ -890,6 +1201,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      constraints: const BoxConstraints(maxWidth: 640),
       backgroundColor: AppTheme.cardBg(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -1677,28 +1989,35 @@ class WhisperCard extends StatelessWidget {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child: Image.network(
-                      imageUrl,
-                      width: double.infinity,
-                      height: 220,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (ctx, child, progress) {
-                        if (progress == null) return child;
-                        return Container(
-                          height: 200,
-                          color: AppTheme.pillBg(context),
-                          child: const Center(
-                            child: CircularProgressIndicator(
-                                color: Color(0xFF10B981)),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxHeight: 380,
+                        minHeight: 180,
+                      ),
+                      child: AspectRatio(
+                        aspectRatio: 16 / 10,
+                        child: Image.network(
+                          imageUrl,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (ctx, child, progress) {
+                            if (progress == null) return child;
+                            return Container(
+                              color: AppTheme.pillBg(context),
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                    color: Color(0xFF10B981)),
+                              ),
+                            );
+                          },
+                          errorBuilder: (_, __, ___) => Container(
+                            height: 120,
+                            color: AppTheme.pillBg(context),
+                            child: const Center(
+                              child: Text('Image failed to load',
+                                  style: TextStyle(color: Colors.grey)),
+                            ),
                           ),
-                        );
-                      },
-                      errorBuilder: (_, __, ___) => Container(
-                        height: 120,
-                        color: AppTheme.pillBg(context),
-                        child: const Center(
-                          child: Text('Image failed to load',
-                              style: TextStyle(color: Colors.grey)),
                         ),
                       ),
                     ),
@@ -2052,6 +2371,7 @@ class WhisperCard extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      constraints: const BoxConstraints(maxWidth: 640),
       backgroundColor: AppTheme.cardBg(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
